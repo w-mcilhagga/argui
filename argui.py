@@ -18,6 +18,9 @@ from tkinter import (
 
 # from tkinter.scrolledtext import ScrolledText
 
+def r(*values):
+    # radio buttons type
+    return {'radio':values}
 
 class GUI:
     def __init__(self, windowname):
@@ -117,7 +120,9 @@ class GUI:
             return "date"
         if type(values) == datetime:
             return "datetime"
-        if values == bool:
+        if type(values)==dict and values.get('radio'):
+            return 'radio'
+        if values in [True, False]:
             return "checkbox"
         if type(values) in [list, tuple]:
             if len(values) == 3 and all(
@@ -223,6 +228,7 @@ class GUI:
         args = options["args"]
         # the boolvar for the checkbox
         boolvar = BooleanVar()
+        boolvar.set(options['values'])
         if options["init"] is not None:
             boolvar.set(options["init"])
         # and the widget itself
@@ -244,6 +250,8 @@ class GUI:
         textvar.set(options["init"] or "")
         # the radio button widgets are stored in an array
         buttons = []
+        if type(options['values'])==dict:
+            options['values'] = options['values']['radio']
         for name in options["values"]:
             b = ttk.Radiobutton(
                 panel, text=name, variable=textvar, value=name, **args
@@ -452,7 +460,6 @@ class GUI:
         mainframe.pack(fill="both")
 
         # layout the widgets
-        self.vars = {}
         self.layout(mainframe, self.items)
 
         # setup tracing on all variables to call onchange
@@ -480,13 +487,12 @@ if __name__ == "__main__":
     g.add("Pick a number", 0, to=10, increment=0.5)
     g.add("Choose an alternative", ["a", "b", "c"])
     g.group("Some checkboxes")
-    g.add("check this ", bool)
-    g.add("check this too", bool)
+    g.add("check this ", False)
+    g.add("check this too", True)
     g.group()
     g.add(
         "Choose an alternative with radio buttons",
-        ["a", "b", "c"],
-        type="radio",
+        r("a", "b", "c")
     )
     g.add(
         "Save file",

@@ -105,6 +105,8 @@ creates
 
 ```python
 g.add("Choose an alternative with radio buttons", ["a", "b", "c"], type="radio")
+# or
+g.add("Choose an alternative with radio buttons", r("a", "b", "c"))
 ```
 
 creates
@@ -112,8 +114,10 @@ creates
 ![radio buttons](docs/radio.png)
 
 -   `name` is the name of the labelled frame around the radio buttons
--   `value` is a list or tuple of radio button labels.
--   `type` is `"radio"`. `type` is required here, otherwise you'll get the combobox implied by the values.
+-   `value` is a list or tuple of radio button labels. Alternatively, you can `import
+      r from argui` and use `r(...)` to create an object whose default
+     type is radio.
+-   `type` is `"radio"`. `type` is required when using a list or tuple, otherwise you'll get the combobox implied by the values.
 -   `init`, if given, selects one of the radio buttons
 
 ### 5. Checkboxes in a group (frame)
