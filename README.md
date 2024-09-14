@@ -1,10 +1,10 @@
 # `argui` - simple user interface for getting arguments.
 
-`argsui` is like `argparse` but for graphical user interfaces. Some libraries like Gooey are designed to take an argparse command-line program and automatically convert it to a GUI program. The logic of `argui` is that it's much simpler to have an argparse branch and a GUI branch in the same program.
+`argsui` is like `argparse` but for graphical user interfaces. Some libraries like Gooey are designed to take an argparse command-line program and automatically convert it to a GUI program. The logic of `argui` is that it's much simpler to just target a GUI if that's what you want.
 
 ## Usage.
 
-Download `argui.py` and dump it in the same folder as your program. Maybe there will be an installer at some point but this is just for me right now.
+Download `argui.py` and dump it in the same folder as your program. Maybe there will be a pip installer at some point but not right now.
 
 Then do the following:
 
@@ -18,11 +18,11 @@ Then do the following:
     ```
 3. Add widgets to the GUI
     ```python
-    g.add(name1, value1)
-    g.add(name2, value2)
+    g.text_entry(name, value)
+    g.dropdown(name, [choice1, choice2, ...])
     ...
     ```
-    The kind of widget is usually inferred from the type of the value.
+
 4. If needed, add actions to the GUI
 5. Run it
     ```python
@@ -44,32 +44,19 @@ Then do the following:
 ## Widget Gallery.
 
 In step 3 above, you add widgets to the GUI. The
-widgets are **not** created at this point; that happens when you run the GUI. The signature of the `add` method is
-
-```python
-gui_object.add(name, values, id=None, init=None, type=None, **kwargs)
-```
-
-where
-
--   `name` is the name of the widget.
--   `values` is the values that the widget has initially.
--   `id` is an optional id for the widget. If not given, the widget id is the same as its name. You can use the widget id (or name0 to get or set the widget value.
--   `init` is the initial value for the widget, if needed and not the same as `values`.
--   `type` gives the type of the widget. Normally, the type of widget can be inferred from the type of the `values`. Supplying `type` overrides that inference.
--   `**kwargs` are arguments to pass to the Tk widget when it is created.
-
-The widgets and their calling signatures are listed below, called on a GUI object `g`:
+widgets are **not** created at this point; that happens when you run the GUI. The widgets and their calling signatures are listed below, called on a GUI object `g`:
 
 ### 1. Text Entry
 
 ```python
-g.add("Enter some text", "")
+g.text_entry("Enter some text", "")
 ```
 
 creates
 
 ![text entry](docs/entertext.png)
+
+#### Parameters:
 
 -   `name` is the name of the labelled frame around the text entry widget
 -   `value` is the initial value of the widget. Text values imply a text entry widget.
@@ -77,12 +64,14 @@ creates
 ### 2. Numeric Entry
 
 ```python
-g.add("Pick a number", 0, to=10)
+g.numeric_entry("Pick a number", 0, to=10)
 ```
 
 creates
 
 ![numeric entry](docs/enternumber.png)
+
+#### Parameters:
 
 -   `name` is the name of the labelled frame around the spinner widget
 -   `value` is the initial value of the widget. Numeric values imply a spinner.
@@ -90,64 +79,58 @@ creates
 ### 3. Combobox/Dropdown
 
 ```python
-g.add("Choose an alternative", ("a", "b", "c"))
+g.dropdown("Choose an alternative", ("a", "b", "c"))
 ```
 
 creates
 
 ![dropdown](docs/dropdown.png)
 
+#### Parameters:
+
 -   `name` is the name of the labelled frame around the combobox widget
 -   `value` is a list or tuple of possible choices in the drop down box. List/tuple values imply a combobox.
--   `init`, if given, selects one of the choices
+-   `init` (optional) selects one of the choices
 
 ### 4. Radio buttons
 
 ```python
-g.add("Choose an alternative with radio buttons", ["a", "b", "c"], type="radio")
-# or
-g.add("Choose an alternative with radio buttons", r("a", "b", "c"))
+g.radio("Choose an alternative with radio buttons", {"a":False,  "b":False, "c":False})
 ```
 
 creates
 
 ![radio buttons](docs/radio.png)
 
--   `name` is the name of the labelled frame around the radio buttons
--   `value` is a list or tuple of radio button labels. Alternatively, you can `import
-      r from argui` and use `r(...)` to create an object whose default
-     type is radio.
--   `type` is `"radio"`. `type` is required when using a list or tuple, otherwise you'll get the combobox implied by the values.
--   `init`, if given, selects one of the radio buttons
+#### Parameters:
 
-### 5. Checkboxes in a group (frame)
+-   `name` is the name of the labelled frame around the radio buttons
+-   `value` is a dict of radio button labels and values. 
+
+You should only have one of the radio buttons set to True. If more than one, the last True button in the dict is checked.
+
+### 5. Checkboxes in a frame
 
 ```python
-g.group("Some checkboxes")
-g.add("check this ", False)
-g.add("check this too", False)
-g.group()
+g.checklist("Some checkboxes", {"check this ":False, "check this too":False})
 ```
 
 creates
 
 ![checkboxes](docs/checks.png)
 
-In each checkbox `add`,
+#### Parameters:
 
--   `name` is the label for the checkbox
--   `value` is the initial value `True` or `False`. Boolean values imply a checkbox.
+-   `name` is the name of the labelled frame around the check boxes
+-   `value` is a dict of checkbox button labels and values. 
 
-This example also introduces a "group" or labelled frame. `g.group(name)` puts the
-following `g.add` widgets in a labelled frame with label `name`. `g.group()` ends the frame.
 
 ### 6. A Save File widget
 
 ```python
-g.add(
+g.picker(
     "Save file",
-    "",
-    type="savefile",
+    mode="savefile",
     title="Save a csv or excel file",
     filetypes=(("CSV", "*.csv"), ("Excel", "*.xlsx")),
 )
@@ -157,32 +140,34 @@ creates
 
 ![savefile](docs/savefile.png)
 
--   `name` is the name of the frame around the widgets.
--   `value` is the file path to start with, if any.
--   `type` is one of `"openfile"`, `"openfolder"` or `"savefile"`. `type` is required here, otherwise you'll get a text entry box implied by the string value.
+#### Parameters:
 
-The keyword arguments after `type` are passed to the `filedialog.asksaveasfilename` dialog. If the dialog title is not given, it defaults to `name`.
+-   `name` is the name of the frame around the widget.
+-   `mode` is openfile, savefile, or openfolder.
+-   `id` (optional) an id if the name isn't unique or too verbose
+-   `title` (optional) is the dialog box title
+-   `filetypes` (optional) is the file types to pass to the dialog box.
+
+Any other keyword arguments are passed to the `filedialog.asksaveasfilename` dialog. If the dialog title is not given, it defaults to `name`.
 
 ---
 
 ### A Row of Buttons
 
 ```python
-g.add('_buttons', ["Run", "Quit"], type="buttons")
-# or
-g.add('_buttons', [b"Run", b"Quit"])
-
+g.buttons('_buttons', ["Run", "Quit"])
 ```
 
 creates
 
 ![buttons in a frame](docs/buttons.png)
 
--   `name` is the name of the labelled frame around the radio buttons. If the name starts with an underscore, the labelled frame becomes just a frame (This is true in all the above cases too).
--   `value` is a list or tuple of button texts. A list or tuple of byte strings implies buttons.
--   `type` is required if the button texts are ordinary strings.
+#### Parameters:
 
-Using byte strings to trigger a set of button widgets is just because the `b` at the start of a byte string reminds me of button.
+-   `name` is the name of the labelled frame around the radio buttons. If the name starts with an underscore, the labelled frame becomes just a frame (This is true in all the above cases too).
+-   `value` is a list or tuple of button texts. 
+-   `layout` (optional) either row or column.
+
 
 ## Actions.
 
@@ -206,6 +191,8 @@ The callback `onrun` takes three arguments
 -   `gui` - the gui object
 
 In the body of the callback, `gui.root` is the window holding the gui. You can also attach a callback with `g.on("Run", onrun)` where `onrun` is a function that has already been defined, or a lambda function.
+
+The name of the widget is the name parameter or id given when the widget is defined. The exception is buttons, where the name is the name of the button.
 
 There is a special event `"init"` that occurs immediately after `g.run()` is called. Use this event to configure the GUI widgets.
 
