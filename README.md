@@ -205,7 +205,7 @@ The callback `onrun` takes three arguments
 -   `value` - it's current value
 -   `gui` - the gui object
 
-In the body of the callback, `gui.root` is the window holding the gui. You can also attach a acllback with `g.on("Run", onrun)` where `onrun` is a function that has already been defined, or a lambda function.
+In the body of the callback, `gui.root` is the window holding the gui. You can also attach a callback with `g.on("Run", onrun)` where `onrun` is a function that has already been defined, or a lambda function.
 
 There is a special event `"init"` that occurs immediately after `g.run()` is called. Use this event to configure the GUI widgets.
 
