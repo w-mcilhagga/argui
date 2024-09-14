@@ -211,10 +211,16 @@ class GUI:
         self.layout(mainframe, self.items)
 
         # setup tracing on all variables to call onchange
+        def getter(var):
+            try:
+                return var.get()
+            except:
+                return None
+            
         def put_trace(name, var):
             var.trace(
                 "w",
-                lambda *args: self.onchange(name, var.get()),
+                lambda *args: self.onchange(name, getter(var)),
             )
 
         for name, value in self.data.items():
@@ -231,6 +237,9 @@ class GUI:
             root.mainloop()
         return self.getvalues()
 
+    def destroy(self, *args):
+        self.root.destroy()
+        
     # widget builders
 
     def create_panel(self, host, name):
@@ -270,7 +279,9 @@ class GUI:
         self.addwidget( widget)
 
     def numeric_entry(
-        self, name, value=0, *, id=None, noframe=False, **kwargs
+        self, name, value=0, *, id=None, noframe=False, 
+        from_=0.0, to=float('inf'), increment=1.0,
+        **kwargs
     ):
         """numeric entry widget
 
@@ -287,7 +298,8 @@ class GUI:
         def widget(host, *args):
             host = self.create_panel(host, name if not noframe else "")
             numvar = DoubleVar(value=value)
-            entry = ttk.Spinbox(host, textvariable=numvar, **kwargs)
+            entry = ttk.Spinbox(host, textvariable=numvar, 
+                                from_=from_, to=to, increment=increment, **kwargs)
             entry.pack(fill="x")
             # save references to var and widget
             self.data[id] = numvar
@@ -607,5 +619,5 @@ if __name__ == "__main__":
     def runner(name, value, gui):
         gui.data["progress"].set(gui.data["progress"].get() + 10)
 
-    g.on("Quit", lambda *args: g.root.destroy())
+    g.on("Quit", lambda *args: g.destroy())
     print(g.run())
