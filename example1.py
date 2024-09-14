@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 Example from https://docs.python.org/3/howto/argparse.html
+
+to compute x**y
 """
 
 from argui import GUI
